@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "vectors": [
+    {
+      "name": "public-prefix-then-tenant",
+      "fragments": [
+        {
+          "id": "tools",
+          "constraints": {
+            "retention": {"mode": "allow", "max_age": 86400},
+            "reuse": "exact",
+            "share_max": "public",
+            "namespace": "tools:v7"
+          }
+        },
+        {
+          "id": "system",
+          "constraints": {
+            "retention": {"mode": "allow", "max_age": 3600},
+            "reuse": "exact",
+            "share_max": "tenant",
+            "namespace": "agent:v4"
+          }
+        }
+      ],
+      "expected": {
+        "after_fragment_0": {"share_max": "public", "max_age": 86400, "reuse": "exact"},
+        "after_fragment_1": {"share_max": "tenant", "max_age": 3600, "reuse": "exact"}
+      }
+    },
+    {
+      "name": "tenant-prefix-then-public-does-not-widen",
+      "fragments": [
+        {
+          "id": "system",
+          "constraints": {
+            "retention": {"mode": "allow"},
+            "reuse": "exact",
+            "share_max": "tenant"
+          }
+        },
+        {
+          "id": "tools",
+          "constraints": {
+            "retention": {"mode": "allow"},
+            "reuse": "exact",
+            "share_max": "public"
+          }
+        }
+      ],
+      "expected": {"after_fragment_1": {"share_max": "tenant", "reuse": "exact"}}
+    },
+    {
+      "name": "no-retention-propagates",
+      "fragments": [
+        {
+          "id": "medical-intake",
+          "constraints": {
+            "retention": {"mode": "forbid"},
+            "reuse": "none",
+            "share_max": "request"
+          }
+        },
+        {
+          "id": "later-instruction",
+          "constraints": {
+            "retention": {"mode": "allow"},
+            "reuse": "exact",
+            "share_max": "tenant"
+          }
+        }
+      ],
+      "expected": {
+        "after_fragment_1": {
+          "retention": {"mode": "forbid"},
+          "reuse": "none",
+          "share_max": "request"
+        }
+      }
+    },
+    {
+      "name": "exact-dominates-approximate",
+      "fragments": [
+        {
+          "id": "a",
+          "constraints": {
+            "retention": {"mode": "allow"},
+            "reuse": "approximate",
+            "share_max": "tenant"
+          }
+        },
+        {
+          "id": "b",
+          "constraints": {
+            "retention": {"mode": "allow"},
+            "reuse": "exact",
+            "share_max": "tenant"
+          }
+        }
+      ],
+      "expected": {"after_fragment_1": {"reuse": "exact"}}
+    },
+    {
+      "name": "namespace-change-forces-miss",
+      "same_model_input": true,
+      "request_1_namespace": "document:8841:v42",
+      "request_2_namespace": "document:8841:v43",
+      "expected": {"cache_match": false}
+    },
+    {
+      "name": "unknown-constraint-fails-closed",
+      "constraints": {
+        "retention": {"mode": "allow"},
+        "reuse": "exact",
+        "share_max": "tenant",
+        "future_constraint": "value"
+      },
+      "expected": {"result": ["reject", "fresh_no_retention_fallback"]}
+    },
+    {
+      "name": "unknown-hint-is-ignored",
+      "hints": {"future_hint": 17},
+      "expected": {"constraints_unchanged": true, "future_hint": "ignored"}
+    }
+  ]
+}
