@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gojiplus/llm-cache-control/main/llm-cache-status.schema.json",
+  "title": "LLM Cache Control cache_status array, version 1",
+  "type": "object",
+  "required": [
+    "cache_status"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "cache_status": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "outcome",
+          "constraint_result"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "outcome": {
+            "enum": [
+              "bypass",
+              "miss",
+              "exact_hit",
+              "approximate_hit",
+              "unobserved"
+            ]
+          },
+          "effective_share": {
+            "enum": [
+              "request",
+              "session",
+              "principal",
+              "tenant",
+              "public"
+            ]
+          },
+          "retention": {
+            "enum": [
+              "forbidden",
+              "declined",
+              "retained",
+              "unobserved"
+            ]
+          },
+          "constraint_result": {
+            "enum": [
+              "satisfied"
+            ]
+          },
+          "hints": {
+            "type": "object",
+            "additionalProperties": {
+              "enum": [
+                "accepted",
+                "clipped",
+                "ignored"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/gojiplus/llm-cache-control/main/llm-cache-capabilities.schema.json",
+  "title": "LLM Cache Control cache_intent_capabilities object, version 1",
+  "type": "object",
+  "required": [
+    "cache_intent_capabilities"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "cache_intent_capabilities": {
+      "type": "object",
+      "required": [
+        "versions",
+        "constraints",
+        "on_unenforceable"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "versions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "retention_modes": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "allow",
+                  "forbid"
+                ]
+              }
+            },
+            "retention_max_age": {
+              "type": "boolean"
+            },
+            "reuse": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "none",
+                  "exact",
+                  "approximate"
+                ]
+              }
+            },
+            "share_max": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "request",
+                  "session",
+                  "principal",
+                  "tenant",
+                  "public"
+                ]
+              }
+            },
+            "namespace": {
+              "type": "boolean"
+            }
+          }
+        },
+        "hints": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "reuse_within_max": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "status": {
+          "type": "boolean"
+        },
+        "per_fragment_share": {
+          "type": "boolean"
+        },
+        "on_unenforceable": {
+          "enum": [
+            "reject",
+            "bypass"
+          ]
+        }
+      }
+    }
+  }
+}

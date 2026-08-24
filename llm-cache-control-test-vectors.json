@@ -3,11 +3,16 @@
   "vectors": [
     {
       "name": "public-prefix-then-tenant",
+      "kind": "composition",
+      "draft_test": 1,
       "fragments": [
         {
           "id": "tools",
           "constraints": {
-            "retention": {"mode": "allow", "max_age": 86400},
+            "retention": {
+              "mode": "allow",
+              "max_age": 86400
+            },
             "reuse": "exact",
             "share_max": "public",
             "namespace": "tools:v7"
@@ -16,7 +21,10 @@
         {
           "id": "system",
           "constraints": {
-            "retention": {"mode": "allow", "max_age": 3600},
+            "retention": {
+              "mode": "allow",
+              "max_age": 3600
+            },
             "reuse": "exact",
             "share_max": "tenant",
             "namespace": "agent:v4"
@@ -24,17 +32,38 @@
         }
       ],
       "expected": {
-        "after_fragment_0": {"share_max": "public", "max_age": 86400, "reuse": "exact"},
-        "after_fragment_1": {"share_max": "tenant", "max_age": 3600, "reuse": "exact"}
-      }
+        "after_fragment_0": {
+          "retention": {
+            "mode": "allow",
+            "max_age": 86400
+          },
+          "reuse": "exact",
+          "share_max": "public",
+          "namespace_identity": "b42d2c88b53bb913c2637817ff163308807ac7ba31ecf20bca0631fabccd38e1"
+        },
+        "after_fragment_1": {
+          "retention": {
+            "mode": "allow",
+            "max_age": 3600
+          },
+          "reuse": "exact",
+          "share_max": "tenant",
+          "namespace_identity": "747083201bfe64956b7607c3202ad0a21214b11de2404d188f30455d4f773dcc"
+        }
+      },
+      "comment": "Also pins which fragments the effective namespace digest ranges over. after_fragment_0 covers state that depends on the tools fragment alone, so it digests one namespace. Reading the construction as ranging over every fragment in the request gives the two-namespace digest instead, and the two implementations then share nothing on this prefix."
     },
     {
       "name": "tenant-prefix-then-public-does-not-widen",
+      "kind": "composition",
+      "draft_test": 2,
       "fragments": [
         {
           "id": "system",
           "constraints": {
-            "retention": {"mode": "allow"},
+            "retention": {
+              "mode": "allow"
+            },
             "reuse": "exact",
             "share_max": "tenant"
           }
@@ -42,21 +71,35 @@
         {
           "id": "tools",
           "constraints": {
-            "retention": {"mode": "allow"},
+            "retention": {
+              "mode": "allow"
+            },
             "reuse": "exact",
             "share_max": "public"
           }
         }
       ],
-      "expected": {"after_fragment_1": {"share_max": "tenant", "reuse": "exact"}}
+      "expected": {
+        "after_fragment_1": {
+          "retention": {
+            "mode": "allow"
+          },
+          "reuse": "exact",
+          "share_max": "tenant"
+        }
+      }
     },
     {
       "name": "no-retention-propagates",
+      "kind": "composition",
+      "draft_test": 3,
       "fragments": [
         {
           "id": "medical-intake",
           "constraints": {
-            "retention": {"mode": "forbid"},
+            "retention": {
+              "mode": "forbid"
+            },
             "reuse": "none",
             "share_max": "request"
           }
@@ -64,7 +107,9 @@
         {
           "id": "later-instruction",
           "constraints": {
-            "retention": {"mode": "allow"},
+            "retention": {
+              "mode": "allow"
+            },
             "reuse": "exact",
             "share_max": "tenant"
           }
@@ -72,7 +117,9 @@
       ],
       "expected": {
         "after_fragment_1": {
-          "retention": {"mode": "forbid"},
+          "retention": {
+            "mode": "forbid"
+          },
           "reuse": "none",
           "share_max": "request"
         }
@@ -80,11 +127,15 @@
     },
     {
       "name": "exact-dominates-approximate",
+      "kind": "composition",
+      "draft_test": 4,
       "fragments": [
         {
           "id": "a",
           "constraints": {
-            "retention": {"mode": "allow"},
+            "retention": {
+              "mode": "allow"
+            },
             "reuse": "approximate",
             "share_max": "tenant"
           }
@@ -92,35 +143,174 @@
         {
           "id": "b",
           "constraints": {
-            "retention": {"mode": "allow"},
+            "retention": {
+              "mode": "allow"
+            },
             "reuse": "exact",
             "share_max": "tenant"
           }
         }
       ],
-      "expected": {"after_fragment_1": {"reuse": "exact"}}
+      "expected": {
+        "after_fragment_1": {
+          "retention": {
+            "mode": "allow"
+          },
+          "reuse": "exact",
+          "share_max": "tenant"
+        }
+      }
+    },
+    {
+      "name": "absent-max-age-does-not-tighten",
+      "kind": "composition",
+      "draft_test": null,
+      "comment": "An absent max_age contributes no upper bound, so it must not shorten the supplied one.",
+      "fragments": [
+        {
+          "id": "bounded",
+          "constraints": {
+            "retention": {
+              "mode": "allow",
+              "max_age": 600
+            },
+            "reuse": "exact",
+            "share_max": "tenant"
+          }
+        },
+        {
+          "id": "unbounded",
+          "constraints": {
+            "retention": {
+              "mode": "allow"
+            },
+            "reuse": "exact",
+            "share_max": "tenant"
+          }
+        }
+      ],
+      "expected": {
+        "after_fragment_1": {
+          "retention": {
+            "mode": "allow",
+            "max_age": 600
+          },
+          "reuse": "exact",
+          "share_max": "tenant"
+        }
+      }
     },
     {
       "name": "namespace-change-forces-miss",
+      "kind": "identity",
+      "draft_test": 9,
       "same_model_input": true,
       "request_1_namespace": "document:8841:v42",
       "request_2_namespace": "document:8841:v43",
-      "expected": {"cache_match": false}
+      "expected": {
+        "cache_match": false
+      }
+    },
+    {
+      "name": "namespace-concatenation-does-not-collide",
+      "kind": "identity",
+      "draft_test": null,
+      "comment": "Namespaces must be combined so that ['ab','c'] and ['a','bc'] yield different identities.",
+      "same_model_input": true,
+      "request_1_namespaces": [
+        "ab",
+        "c"
+      ],
+      "request_2_namespaces": [
+        "a",
+        "bc"
+      ],
+      "expected": {
+        "cache_match": false
+      }
     },
     {
       "name": "unknown-constraint-fails-closed",
+      "kind": "fail_closed",
+      "draft_test": 6,
       "constraints": {
-        "retention": {"mode": "allow"},
+        "retention": {
+          "mode": "allow"
+        },
         "reuse": "exact",
         "share_max": "tenant",
         "future_constraint": "value"
       },
-      "expected": {"result": ["reject", "fresh_no_retention_fallback"]}
+      "expected": {
+        "result": [
+          "reject",
+          "fresh_no_retention_fallback"
+        ]
+      }
     },
     {
       "name": "unknown-hint-is-ignored",
-      "hints": {"future_hint": 17},
-      "expected": {"constraints_unchanged": true, "future_hint": "ignored"}
+      "kind": "hint_tolerance",
+      "draft_test": 7,
+      "constraints": {
+        "retention": {
+          "mode": "allow"
+        },
+        "reuse": "exact",
+        "share_max": "tenant"
+      },
+      "hints": {
+        "future_hint": 17
+      },
+      "expected": {
+        "constraints_unchanged": true,
+        "future_hint": "ignored"
+      }
+    },
+    {
+      "name": "effective-namespace-digest-is-byte-exact",
+      "kind": "digest",
+      "draft_test": null,
+      "comment": "Golden values for the construction in Conservative Composition. Two implementations that agree on every other vector still cannot share a cache entry unless they agree here.",
+      "cases": [
+        {
+          "namespaces": [
+            "tools:v7",
+            "support-agent:v4"
+          ],
+          "digest": "fb7a315a255a573244c19f45863265b314f278ee45ebe65698b050a2dbc322ad"
+        },
+        {
+          "namespaces": [
+            "ab",
+            "c"
+          ],
+          "digest": "430fb1b4ac43316eca81fab27a1930ab8eff8fef6a1dc7903dce44bbc2790dc5"
+        },
+        {
+          "namespaces": [
+            "a",
+            "bc"
+          ],
+          "digest": "5310a58788781ab25d5ad7c3f85035824b4eb7bdfa394e0ac2186271472b5492"
+        },
+        {
+          "namespaces": [
+            "x",
+            "x"
+          ],
+          "digest": "2482947ba48b87c50278e640b28cc6d15a2aee7f5345f290c6956cacf9bdda99"
+        },
+        {
+          "namespaces": [
+            "caf\u00e9:v1"
+          ],
+          "digest": "1e580f8419432c52b25da19e15f98d7e8676fab09e6c26c55e8363696f70cb5e"
+        }
+      ],
+      "expected": {
+        "digests_match": true
+      }
     }
   ]
 }

@@ -1,0 +1,25 @@
+name: conformance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install jsonschema pytest black isort flake8
+      - name: Conformance suite
+        run: python -m conformance.run_conformance
+      - name: Gateway unit tests
+        run: python -m pytest gateway/tests -q
+      - name: Lint
+        run: |
+          black --line-length 100 --check conformance/ gateway/
+          isort --settings-path conformance/setup.cfg --check conformance/ gateway/
+          flake8 --config conformance/setup.cfg conformance/ gateway/

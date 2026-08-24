@@ -2,53 +2,113 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/gojiplus/llm-cache-control/main/llm-cache-control.schema.json",
   "title": "LLM Cache Control cache_intent object, version 1",
-  "type": "object",
-  "required": ["cache_intent"],
-  "additionalProperties": false,
-  "properties": {
+  "$defs": {
     "cache_intent": {
       "type": "object",
-      "required": ["version", "constraints"],
+      "required": [
+        "version",
+        "constraints"
+      ],
       "additionalProperties": false,
       "properties": {
-        "version": {"const": 1},
-        "id": {"type": "string", "minLength": 1, "maxLength": 256},
+        "version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
         "constraints": {
           "type": "object",
-          "required": ["retention", "reuse", "share_max"],
+          "required": [
+            "retention",
+            "reuse",
+            "share_max"
+          ],
           "additionalProperties": false,
           "properties": {
             "retention": {
               "type": "object",
-              "required": ["mode"],
+              "required": [
+                "mode"
+              ],
               "additionalProperties": false,
               "properties": {
-                "mode": {"enum": ["allow", "forbid"]},
-                "max_age": {"type": "integer", "minimum": 0}
+                "mode": {
+                  "enum": [
+                    "allow",
+                    "forbid"
+                  ]
+                },
+                "max_age": {
+                  "type": "integer",
+                  "minimum": 0
+                }
               },
               "allOf": [
                 {
-                  "if": {"properties": {"mode": {"const": "forbid"}}},
-                  "then": {"not": {"required": ["max_age"]}}
+                  "if": {
+                    "properties": {
+                      "mode": {
+                        "const": "forbid"
+                      }
+                    }
+                  },
+                  "then": {
+                    "not": {
+                      "required": [
+                        "max_age"
+                      ]
+                    }
+                  }
                 }
               ]
             },
-            "reuse": {"enum": ["none", "exact", "approximate"]},
-            "share_max": {
-              "enum": ["request", "session", "principal", "tenant", "public"]
+            "reuse": {
+              "enum": [
+                "none",
+                "exact",
+                "approximate"
+              ]
             },
-            "namespace": {"type": "string", "minLength": 1, "maxLength": 256}
+            "share_max": {
+              "enum": [
+                "request",
+                "session",
+                "principal",
+                "tenant",
+                "public"
+              ]
+            },
+            "namespace": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
           }
         },
         "hints": {
           "type": "object",
           "additionalProperties": true,
           "properties": {
-            "reuse_within": {"type": "integer", "minimum": 0},
-            "priority": {"type": "integer", "minimum": 0, "maximum": 100}
+            "reuse_within": {
+              "type": "integer",
+              "minimum": 0
+            }
           }
         }
       }
+    }
+  },
+  "type": "object",
+  "required": [
+    "cache_intent"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "cache_intent": {
+      "$ref": "#/$defs/cache_intent"
     }
   }
 }
