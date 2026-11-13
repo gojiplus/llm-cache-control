@@ -164,7 +164,7 @@ physical KV cache
 The lowering is deliberately asymmetric. A soft hint may become an engine hint or be dropped
 under pressure, but a hard application constraint stays hard.
 
-The status object is modelled on the HTTP [`Cache-Status`](https://www.rfc-editor.org/rfc/rfc9211.html)
+The status object is modeled on the HTTP [`Cache-Status`](https://www.rfc-editor.org/rfc/rfc9211.html)
 field in purpose, though not in syntax, and the constraint-versus-hint split follows the same
 instinct as [`Cache-Control`](https://www.rfc-editor.org/rfc/rfc9111.html).
 

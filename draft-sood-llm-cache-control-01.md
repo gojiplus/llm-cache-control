@@ -823,7 +823,7 @@ the practice would defeat that.
 that cannot be served under its effective constraints is rejected or
 bypassed, and bypassing satisfies them, so no status entry can describe a
 constraint that was not met.  An implementation MUST include the member in
-every entry it emits rather than signalling by absence, and a caller MUST
+every entry it emits rather than signaling by absence, and a caller MUST
 NOT read a missing member as a failure.  A host protocol MAY define a
 separate error shape for rejected cache intent.
 
@@ -1069,7 +1069,7 @@ What can be said is where it is not and what would make the question ripe.
 The only chartered IETF working group on artificial intelligence is AI
 Preferences (aipref), and it is not this: it standardizes how a content owner
 expresses preferences about collection and processing for model development,
-and its charter puts authenticating or authorising clients, and technical
+and its charter puts authenticating or authorizing clients, and technical
 enforcement of preferences, out of scope.  Every constraint here is an
 authorization boundary that an implementation must enforce, so the two
 documents are near-opposites in subject.
@@ -1089,7 +1089,7 @@ value, a public prefix shared across tenants ahead of private state, cannot
 be demonstrated on any engine, and a standards body would be chartering work
 whose payoff nobody has shown.
 
-# Acknowledgements {#acknowledgements}
+# Acknowledgments {#acknowledgments}
 {: numbered="false"}
 
 TBD.
